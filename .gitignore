@@ -15,4 +15,3 @@ bin/
 build.sbt
 libexec/
 project/
-src/
