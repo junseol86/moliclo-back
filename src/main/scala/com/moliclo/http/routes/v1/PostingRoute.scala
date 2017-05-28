@@ -21,17 +21,17 @@ trait PostingRoute extends PostingModel with CardModel with UserModel {
         //        http://localhost:9001/v1/posting?page=0&other=1
         parameters('page.as[Int], 'per_page.as[Int]) { (page, per_page) =>
           complete(getPostingTotal.map { total =>
-              getPostings(page, per_page).map { postingList =>
-                val postingListMapped = postingList.map { item =>
-                  postingForThumb(item)
-                }
-                var result = Map[String, Any]()
-                val isLast = (page + 1) * per_page >= total
-                result += "isLast" -> isLast
-                result += "postingList" -> postingListMapped
-                Json(formats).write(result)
+            getPostings(page, per_page).map { postingList =>
+              val postingListMapped = postingList.map { item =>
+                postingForThumb(item)
               }
-            })
+              var result = Map[String, Any]()
+              val isLast = (page + 1) * per_page >= total
+              result += "isLast" -> isLast
+              result += "postingList" -> postingListMapped
+              Json(formats).write(result)
+            }
+          })
         }
       }
     }
@@ -41,10 +41,10 @@ trait PostingRoute extends PostingModel with CardModel with UserModel {
       get {
         complete(getAPosting(idx).map { posting =>
           val postingMap = postingForRead(posting(0))
-          getCards(idx).map { cards =>
+          getCardInPostingTotal(idx).map { cards =>
             var result = Map[String, Any]()
             result += "posting" -> postingMap
-            result += "cards" -> cards
+            result += "card_total" -> cards
             Json(formats).write(result)
           }
         })

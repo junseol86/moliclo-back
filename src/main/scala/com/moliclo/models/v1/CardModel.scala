@@ -28,10 +28,15 @@ trait CardModel extends DatabaseConfig {
 
   val cards = TableQuery[Cards]
 
-  def getCards(posting: Int): Future[Seq[Card]] = {
+  def getCardInPostingTotal(posting: Int): Future[Int] = db.run { cards.filter(_.posting === posting).length.result }
+
+  def getCards(posting: Int, page: Int, perPage: Int): Future[Seq[Card]] = {
     db.run {
-      cards.filter(_.posting === posting).result
+      cards
+        .filter(_.posting === posting)
+        .drop(page * perPage)
+        .take(perPage)
+        .result
     }
   }
-
 }

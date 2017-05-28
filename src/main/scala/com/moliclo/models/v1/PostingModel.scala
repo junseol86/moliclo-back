@@ -63,15 +63,22 @@ trait PostingModel extends DatabaseConfig with UserModel {
 
   def getPostings(page: Int, perPage: Int): Future[Seq[(Posting, User)]] =
     db.run {
-      postings_x_users.filter(_._1.sts === "O").drop(page * perPage)
-      .take(perPage)
-      .sortBy(postings => postings._1.idx.desc)
-      .result}
-  def getPostingTotal: Future[Int] = db.run(postings.length.result)
+      postings_x_users
+        .filter(_._1.sts === "O")
+        .drop(page * perPage)
+        .take(perPage)
+        .sortBy(postings => postings._1.idx.desc)
+        .result
+    }
+  def getPostingTotal: Future[Int] =
+    db.run(postings.length.result)
 
-  def getAPosting(idx: Int): Future[Seq[(Posting, User)]] = db.run {
-    postings_x_users.filter(_._1.idx === idx).result
-  }
+  def getAPosting(idx: Int): Future[Seq[(Posting, User)]] =
+    db.run {
+      postings_x_users
+        .filter(_._1.idx === idx)
+        .result
+    }
 
 }
 
