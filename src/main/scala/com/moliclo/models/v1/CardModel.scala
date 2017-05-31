@@ -28,12 +28,18 @@ trait CardModel extends DatabaseConfig {
 
   val cards = TableQuery[Cards]
 
-  def getCardInPostingTotal(posting: Int): Future[Int] = db.run { cards.filter(_.posting === posting).length.result }
-
-  def getCards(posting: Int, page: Int, perPage: Int): Future[Seq[Card]] = {
+  def getCardInPostingTotal(posting: Int, last: Int): Future[Int] =
     db.run {
       cards
-        .filter(_.posting === posting)
+        .filter(card => card.posting === posting && (card.idx <= last || last == 0))
+        .length
+        .result
+    }
+
+  def getCards(posting: Int, page: Int, perPage: Int, last: Int): Future[Seq[Card]] = {
+    db.run {
+      cards
+        .filter(card => card.posting === posting && (card.idx <= last || last == 0))
         .drop(page * perPage)
         .take(perPage)
         .result

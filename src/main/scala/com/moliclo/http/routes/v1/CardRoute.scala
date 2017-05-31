@@ -18,8 +18,8 @@ trait CardRoute extends CardModel {
 
     pathEndOrSingleSlash {
       get {
-        parameters('posting.as[Int], 'page.as[Int], 'per_page.as[Int]) { (posting, page, perPage) =>
-          complete(getCards(posting, page, perPage).map { cards =>
+        parameters('posting.as[Int], 'page.as[Int], 'per_page.as[Int], 'last.as[Int]) { (posting, page, perPage, last) =>
+          complete(getCards(posting, page, perPage, last).map { cards =>
             Json(cardResultFormats).write(cards)
           })
         }

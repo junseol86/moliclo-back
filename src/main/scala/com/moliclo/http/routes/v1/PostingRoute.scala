@@ -39,15 +39,18 @@ trait PostingRoute extends PostingModel with CardModel with UserModel {
   pathPrefix("postings" / IntNumber) { idx =>
     pathEndOrSingleSlash {
       get {
-        complete(getAPosting(idx).map { posting =>
-          val postingMap = postingForRead(posting(0))
-          getCardInPostingTotal(idx).map { cards =>
-            var result = Map[String, Any]()
-            result += "posting" -> postingMap
-            result += "card_total" -> cards
-            Json(formats).write(result)
-          }
-        })
+        parameters('last.as[Int]) { (last) =>
+          complete(getAPosting(idx).map { posting =>
+            val postingMap = postingForRead(posting(0))
+            getCardInPostingTotal(idx, last).map { cards =>
+              var result = Map[String, Any]()
+              result += "posting" -> postingMap
+              result += "card_total" -> cards
+              Json(formats).write(result)
+            }
+          })
+        }
+
       }
     }
   }
