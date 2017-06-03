@@ -20,7 +20,10 @@ trait CardRoute extends CardModel {
       get {
         parameters('posting.as[Int], 'page.as[Int], 'per_page.as[Int], 'last.as[Int]) { (posting, page, perPage, last) =>
           complete(getCards(posting, page, perPage, last).map { cards =>
-            Json(cardResultFormats).write(cards)
+            val cardsMapped = cards.map { card =>
+              cardInPosting(card)
+            }
+            Json(cardResultFormats).write(cardsMapped)
           })
         }
       }

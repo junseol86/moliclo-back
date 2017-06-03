@@ -1,6 +1,6 @@
 package com.moliclo.models.v1
 
-import java.sql.Date
+import java.sql.Timestamp
 import com.moliclo.utils.DatabaseConfig
 import scala.concurrent.Future
 
@@ -13,7 +13,7 @@ trait PostingModel extends DatabaseConfig with UserModel {
 
   import driver.api._
 
-  case class Posting(idx: Int, author: Int, title: String, thumbnail: Option[String], prev_post: Int, prev_card: Int, sts: String, created: Date, updated: Date)
+  case class Posting(idx: Int, author: Int, title: String, thumbnail: Option[String], prev_post: Int, prev_card: Int, sts: String, created: Timestamp, updated: Timestamp)
 
   class Postings(tag: Tag) extends Table[Posting](tag, "mol_posting") {
     def idx = column[Int]("idx", O.PrimaryKey, O.AutoInc)
@@ -23,8 +23,8 @@ trait PostingModel extends DatabaseConfig with UserModel {
     def prev_post = column[Int]("prev_post")
     def prev_card = column[Int]("prev_card")
     def sts = column[String]("sts")
-    def created = column[Date]("created")
-    def updated = column[Date]("updated")
+    def created = column[Timestamp]("created")
+    def updated = column[Timestamp]("updated")
 
     def * = (idx, author, title, thumbnail, prev_post, prev_card, sts, created, updated) <> ((Posting.apply _).tupled, Posting.unapply)
   }
@@ -41,7 +41,7 @@ trait PostingModel extends DatabaseConfig with UserModel {
     postingForThumbMap += "author" -> arg._1.author
     postingForThumbMap += "title" -> arg._1.title
     postingForThumbMap += "posting_thumbnail" -> arg._1.thumbnail
-    postingForThumbMap += "updated" -> arg._1.updated.toString
+    postingForThumbMap += "updated" -> arg._1.updated.toString.replace(".0", "")
     postingForThumbMap += "user_name" -> arg._2.user_name
     postingForThumbMap += "user_thumbnail" -> arg._2.thumbnail
     postingForThumbMap
@@ -55,7 +55,7 @@ trait PostingModel extends DatabaseConfig with UserModel {
     postingForReadMap += "title" -> arg._1.title
     postingForReadMap += "prev_post" -> arg._1.prev_post
     postingForReadMap += "prev_card" -> arg._1.prev_card
-    postingForReadMap += "updated" -> arg._1.updated
+    postingForReadMap += "updated" -> arg._1.updated.toString.replace(".0", "")
     postingForReadMap += "user_name" -> arg._2.user_name
     postingForReadMap += "user_thumbnail" -> arg._2.thumbnail
     postingForReadMap
