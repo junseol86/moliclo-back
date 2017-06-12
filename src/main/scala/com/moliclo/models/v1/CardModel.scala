@@ -7,7 +7,7 @@ import scala.concurrent.Future
 /**
   * Created by Hyeonmin on 2017-05-25.
   */
-trait CardModel extends DatabaseConfig {
+trait CardModel extends DatabaseConfig with CommentModel {
 
   import driver.api._
 
@@ -26,16 +26,21 @@ trait CardModel extends DatabaseConfig {
   }
 
   val cards = TableQuery[Cards]
+  val cards_x_comment_counts = for {
+    (card, comment) <- cards join comments on (_.idx === _.card)
+  } yield (card, comment)
 
-  def cardInPosting(arg: Card): Map[String, Any] = {
+
+  def cardInPosting(arg: (Int, Int, String, String, String, String, Timestamp, Int)): Map[String, Any] = {
     var result = Map[String, Any]()
-    result += "idx" -> arg.idx
-    result += "posting" -> arg.posting
-    result += "card_type" -> arg.card_type
-    result += "cont_1" -> arg.cont_1
-    result += "cont_2" -> arg.cont_2
-    result += "cont_3" -> arg.cont_3
-    result += "updated" -> arg.updated.toString.replace(".0", "")
+    result += "idx" -> arg._1
+    result += "posting" -> arg._2
+    result += "card_type" -> arg._3
+    result += "cont_1" -> arg._4
+    result += "cont_2" -> arg._5
+    result += "cont_3" -> arg._6
+    result += "updated" -> arg._7.toString.replace(".0", "")
+    result += "comment_count" -> arg._8
     result
   }
 
@@ -47,13 +52,18 @@ trait CardModel extends DatabaseConfig {
         .result
     }
 
-  def getCards(posting: Int, page: Int, perPage: Int, last: Int): Future[Seq[Card]] = {
+  def getCards(posting: Int, page: Int, perPage: Int, last: Int): Future[Seq[(Int, Int, String, String, String, String, Timestamp, Int)]] = {
     db.run {
-      cards
-        .filter(card => card.posting === posting && (card.idx <= last || last == 0))
-        .drop(page * perPage)
-        .take(perPage)
-        .result
+      sql"""SELECT
+           card.idx, card.posting, card.card_type, card.cont_1, card.cont_2, card.cont_3, card.updated,
+           COUNT(cmt.idx)
+           AS count FROM mol_card card
+           LEFT JOIN mol_comment cmt
+           ON card.idx = cmt.card
+           WHERE card.posting = ${posting}
+           GROUP BY card.idx""".as[(Int, Int, String, String, String, String, Timestamp, Int)]
     }
   }
+
+  //  SELECT card.*, COUNT(cmt.idx) AS COUNT FROM mol_card card LEFT JOIN mol_comment cmt ON card.idx = cmt.card GROUP BY card.idx
 }
